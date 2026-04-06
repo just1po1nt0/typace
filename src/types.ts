@@ -7,8 +7,15 @@ export type TempoProfile = {
      * Standard deviation of characters per second of the user.
      */
     deviation: number;
+    /**
+     * Amount of times tempo data has been recorded into profile.
+     */
+    samples: number;
 }
 
+/**
+ * @deprecated from profile version 2. Use samples data within individual profiles
+ */
 export type ProfileSamples = {
     tempo: number;
     pause: number;
@@ -30,8 +37,38 @@ export type PauseProfile = {
     deviation: number;
     /**
      * 90% percentile of maximum **learnt** pause time
+     * @deprecated please use mean and deviation instead. Will not be calculated or used in future versions
      */
     longPauseThreshold?: number; // meanPause + 2*deviationPause
+    /**
+     * Amount of times pause data has been recorded into profile.
+     */
+    samples: number;
+}
+
+
+export type EditProfile = {
+    /**
+     * Coefficient of how much this user revises their typing per total input length.
+     * @remarks Higher edit rate delays firing, low edit rate trusts pauses more as signal to fire.
+     */
+    editRate: number;
+    /**
+     * Amount of times edit data has been recorded into profile.
+     */
+    samples: number;
+}
+
+export type ToleranceProfile = {
+    /**
+     * Coefficient of how often fired queries are followed by more typing.
+     * i.e. probability that early fire does not interrupt user's flow.
+     */
+    fireTolerance: number;
+    /**
+     * Amount of times fire tolerance data has been recorded into profile.
+     */
+    samples: number;
 }
 
 export type Profile = {
@@ -40,21 +77,15 @@ export type Profile = {
      * General writing score data, i.e. how fast can this user type and how consistent the time between keystrokes is.
      */
     tempoProfile: TempoProfile;
+    pauseProfile: PauseProfile;
     /**
-     * Contains an object with amount of times data about each type of signal had been recorded into profile.
+     * Editing data about the user with `editRate` and number of samples taken.
      */
-    samples: ProfileSamples;
-    pauseProfile: PauseProfile
+    editProfile: EditProfile;
     /**
-     * Coefficient of how much this user revises their typing per total input length.
-     * @remarks Higher edit rate delays firing, low edit rate trusts pauses more as signal to fire.
+     * Tolerance data about the user with `fireTolerance` and number of samples taken.
      */
-    editRate: number;
-    /**
-     * Coefficient of how often fired queries are followed by more typing.
-     * i.e. probability that early fire does not interrupt user's flow.
-     */
-    fireTolerance: number;
+    toleranceProfile: ToleranceProfile;
     lastUpdated?: number;
 }
 
@@ -100,6 +131,22 @@ export type Config = {
     disableLearning?: boolean;
 }
 
+export type SessionEditState = {
+    length: number,
+    prevLength?: number,
+    effort: number,
+    progress: number,
+    consecutiveEdits: number,
+    signal: number,
+}
+
+export type SessionPauseState = {
+    start: number,
+    timeout: number,
+    interval: number,
+    lengths: number[]
+}
+
 /**
  * Type for storing session data
  */
@@ -107,7 +154,8 @@ export type SessionState = {
     profile: Profile;
     timestamps: number[];
     typingTimeout: number;
-
+    edit: SessionEditState;
+    pause: SessionPauseState;
 }
 
 /**

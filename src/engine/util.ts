@@ -1,4 +1,4 @@
-export const EMA = (avg: number, value: number, samples: number, alpha: number = null) => {
+export const EMA = (avg: number, value: number, samples: number, alpha: number | null = null) => {
     if(!alpha) alpha = getAlpha(samples);
     return (value * alpha) + (avg * (1 - alpha))
 }
@@ -14,7 +14,7 @@ export const meanAvg = (values: number[]) => {
  * @param useSample whether to use sample (n-1) vs population (n) formula
  * @returns Variance of the values provided
  */
-export const variance = (values: number[], avg: number = null, useSample: boolean = true) => {
+export const variance = (values: number[], avg: number | null = null, useSample: boolean = true) => {
     if(values.length < 2) return 0;
 
     if(!avg) avg = meanAvg(values);
@@ -32,7 +32,7 @@ export const variance = (values: number[], avg: number = null, useSample: boolea
  * @param useSample whether to use sample (n-1) vs population (n) formula
  * @returns Standard deviation
  */
-export const stdDev = (values: number[], avg: number = null, useSample: boolean = true) => {
+export const stdDev = (values: number[], avg: number | null = null, useSample: boolean = true) => {
     return Math.sqrt(variance(values, avg, useSample));
 }
 
@@ -53,7 +53,7 @@ export const getAlpha = (n: number): number => {
  */
 export const getIntervals = (values: number[]): number[] => {
     if(values.length < 2 ) return [0];
-    let result: number[];
+    let result: number[] = [];
     for(let i = 1; i < values.length; i++) {
         result.push(values[i] - values[i-1]);
     }
@@ -89,3 +89,13 @@ export const timestampsToFrequency = (timestamps: number[]): number => {
 export const truncateOldTimestamps = (timestamps: number[], threshold: number = 2000, now: number = new Date().getTime()) => {
     return timestamps.filter(t => now - t <= threshold);
 }
+
+/**
+ * Calculates a continuous weight (0 to 1) for a deletion event.
+ * Uses a smooth curve so massive deletions approach 0 weight.
+ */
+export const getEditWeight = (expectedEditSize: number, consecutiveEdits: number): number => {
+    // Fallback to prevent division by zero in edge cases
+    if (expectedEditSize <= 0) return 1; 
+    return expectedEditSize / (expectedEditSize + consecutiveEdits);
+};

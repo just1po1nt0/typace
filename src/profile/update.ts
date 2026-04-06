@@ -1,4 +1,4 @@
-import { Profile, ProfileSamples, TempoProfile } from "@/types";
+import { PauseProfile, Profile, ProfileSamples, TempoProfile } from "@/types";
 import ProfileController from "./profile";
 import { EMA, getIntervals, intervalsToFrequency, meanAvg, stdDev } from "@/engine/util";
 
@@ -92,23 +92,23 @@ const signalToData = (signal: Signal): {value: number, deviation?: number, n: nu
             return {
                 value: profile.tempoProfile.meanCPS,
                 deviation: profile.tempoProfile.deviation,
-                n: profile.samples.tempo
+                n: profile.tempoProfile.samples
             }
         case "edit":
             return {
-                value: profile.editRate,
-                n: profile.samples.edit,
+                value: profile.editProfile.editRate,
+                n: profile.editProfile.samples,
             }
         case "fire":
             return {
-                value: profile.fireTolerance,
-                n: profile.samples.fireTolerance
+                value: profile.toleranceProfile.fireTolerance,
+                n: profile.toleranceProfile.samples
             }
         case "pause":
             return {
                 value: profile.pauseProfile.meanPause,
                 deviation: profile.pauseProfile.deviation,
-                n: profile.samples.pause
+                n: profile.pauseProfile.samples
             }
     }
 }
@@ -118,18 +118,28 @@ const signalToData = (signal: Signal): {value: number, deviation?: number, n: nu
  * @remarks Use in sessions only, DO NOT calculate long-term profile using this function.
  * @param profile an instance of localProfile stored in `Session`.
  * @param timestamps timestamps of typing events with omitted deletion events.
- * @returns 
- */
-export const updateLocalTempoProfile = (tempoProfile: TempoProfile, samples: ProfileSamples, timestamps: number[]): { tempoProfile: TempoProfile, samples: ProfileSamples } => {
+ * @returns new `tempoProfile` and `samples`
+*/
+export const updateLocalTempoProfile = (tempoProfile: TempoProfile, timestamps: number[]): TempoProfile => {
     const intervals = getIntervals(timestamps);
     const mean = meanAvg(intervals);
     const dev = stdDev(intervals, mean);
 
-    tempoProfile.meanCPS = EMA(tempoProfile.meanCPS, intervalsToFrequency(intervals), 0.2)
-    tempoProfile.deviation = EMA(tempoProfile.deviation, dev, 0.2);
-    samples.tempo++
+    tempoProfile.meanCPS = EMA(tempoProfile.meanCPS, intervalsToFrequency(intervals), tempoProfile.samples)
+    tempoProfile.deviation = EMA(tempoProfile.deviation, dev, tempoProfile.samples);
+    tempoProfile.samples++
 
-    return { tempoProfile, samples }; 
+    return tempoProfile; 
     /** TO DO: Modularise this by passing tempoProfile instead of localProfile */
 
+}
+
+export const updateLocalPauseProfile = (pauseProfile: PauseProfile, intervals: number[]): PauseProfile => {
+    const mean = meanAvg(intervals);
+    const dev = stdDev(intervals, mean);
+
+    pauseProfile.meanPause = EMA(pauseProfile.meanPause, mean, pauseProfile.samples);
+    pauseProfile.deviation = EMA(pauseProfile.deviation, dev, pauseProfile.samples)
+
+    return pauseProfile
 }

@@ -1,3 +1,6 @@
+import { PauseProfile, SessionEditState } from "@/types";
+import { getEditWeight } from "./util";
+
 interface GetTempoProfileProps {
     timestamps: number[];
 }
@@ -40,6 +43,7 @@ export const shouldCountAsTyping: ShouldCountAsTyping = (inputType, isComposing)
 export const getTypingTimeout = (avgCPS: number, devCPS: number, timestamp: number = new Date().getTime()) => {
     const devConfidence = 2;
 
+    // convert to ms
     const avgInterval = 1000 / avgCPS;
     const devInterval = 1000 / devCPS;
     const t = avgInterval + (devConfidence * devInterval);
@@ -47,10 +51,78 @@ export const getTypingTimeout = (avgCPS: number, devCPS: number, timestamp: numb
     return timestamp + t;
 }
 
-type GetPauseLikelihood = (
-    
-) => number;
+type GetPauseTimeout = (
+    pauseProfile: PauseProfile,
+    typingTimeout: number,
+    editSignal: number,
+    fireTolerance: number,
+) => {pauseTimeout: number, t: number};
 
-export const getPauseLikelihood = () => {
+/**
+ * Calculate time threshold where pause will fire without further user input
+ * @param pauseProfile session pause profile (with mean and deviation)
+ * @param typingTimeout typing timeout calculated with `getTypingTimeout()`
+ * @returns `timestamp + t` tiem threshold before which to expect input before firing
+ * @remarks time-driven in `session`
+ */
+export const getPauseTimeout: GetPauseTimeout = (pauseProfile, typingTimeout, editSignal, fireTolerance) => {
+    const devConfidence = 2;
 
+    // convert to ms
+    const avgPause = 1000 / pauseProfile.meanPause;
+    const dev = 1000 / pauseProfile.deviation;
+    const t = avgPause + (devConfidence * dev);
+
+    const pauseTimeout = typingTimeout + getWeightedPauseThreshold(t, editSignal, fireTolerance);
+    return {pauseTimeout, t}
+}
+
+type GetWeightedPauseInterval = (
+    timeoutInterval: number,
+    editSignal: number,
+    fireTolerance: number,
+) => number
+
+export const getWeightedPauseThreshold: GetWeightedPauseInterval = (timeoutInterval, editSignal, fireTolerance) => {
+    return (timeoutInterval - (1 - editSignal)) * (1.2 * Math.exp(-0.4 * fireTolerance));
+}
+
+/**
+ * Processes new event with previous data from `SessionEditState` and adds new edit signal
+ * @param editState session editing state captured from session state variables
+ * @param editRate user profile edit rate
+ * @param isTyping boolean value whether an event is a valid typing (insertion) event
+ * @returns `SessionEditState` with updated state variables
+ */
+export const getEditLikelihood = (editState: SessionEditState, editRate: number, isTyping: boolean): SessionEditState => {
+    if(!editState.prevLength) editState.prevLength = 0;
+    const delta = Math.abs(editState.length - editState.prevLength)
+
+    if(delta === 0) {
+        return { ...editState, effort: editState.effort++, consecutiveEdits: 0}
+    }
+    const expectedEditSize = Math.max(1, 1 / (editRate || 0.01));
+
+    if(isTyping) {
+        const DECAY_RATE = Math.exp(-delta / expectedEditSize);
+        return {
+            ...editState,
+            prevLength: length,
+            progress: editState.progress + delta,
+            effort: editState.progress + delta,
+            consecutiveEdits: 0,
+            signal: editState.signal * DECAY_RATE
+        }
+    }
+
+    editState.consecutiveEdits = editState.consecutiveEdits + delta;
+    const weight = getEditWeight(expectedEditSize, editState.consecutiveEdits);
+    const spike = (1 - editState.signal) * weight;
+
+    return {
+        ...editState,
+        prevLength: length,
+        effort: editState.effort + delta,
+        signal: editState.signal + spike
+    }
 }
