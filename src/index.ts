@@ -1,3 +1,2 @@
-/* This line of code is exporting the `sayHello` and `sayGoodbye` functions from the `hello-world`
-module. It allows other modules to import and use these functions. */
-export { useAdaptiveDebounce } from "@/react/useAdaptiveDebounce";
+export { default as useAdaptiveDebounce } from "./react/useAdaptiveDebounce";
+export type { useAdaptiveDebounceProps } from "./types";

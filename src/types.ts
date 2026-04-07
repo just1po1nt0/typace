@@ -91,8 +91,8 @@ export type Profile = {
 
 export type useAdaptiveDebounceProps = ( 
     onFire: (value: any) => any,
-    minChars: number,
-    config: Config,
+    minChars?: number,
+    config?: Config,
 ) => any//=> { bind: any, readiness: number, fireNow: () => any};
 
 export type Config = {

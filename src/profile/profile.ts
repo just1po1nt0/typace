@@ -46,6 +46,7 @@ class ProfileController {
     }
 
     getProfile(): Profile {
+        console.log("asked for profile and got this", this.profile)
         return this.profile
     }
 

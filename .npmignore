@@ -1,0 +1,6 @@
+src/
+test/
+*.old
+*.xml
+tsup.config.ts
+jest.config.js
