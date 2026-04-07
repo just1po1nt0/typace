@@ -52,7 +52,7 @@ const processTick = () => {
     const now = Date.now();
 
     sessionStore.setState((curr) => {
-        const cleanedTimestamps = cleanTimestamps([...curr.timestamps], now);
+        const cleanedTimestamps = cleanTimestamps([...curr.timestamps], performance.now());
         
         // Extracted repetitive base state updates
         const state = { 
@@ -107,8 +107,13 @@ const processTick = () => {
             };
         }
 
-        if (!state.fire.hasFired) state.fire.fire();
+        
 
+        if (!state.fire.hasFired) { 
+            console.log("Data before fire:", state)
+            state.fire.fire() 
+        };
+        
         // will also recalculate every time (FIX)
         const awaitTimeout = pauseTimeout + state.typing.interval;
 
@@ -182,7 +187,7 @@ const addEvent = (length: number, inputType: string, isComposing: boolean, times
                 ...state.profile,
                 tempoProfile,
             },
-            timeout: getTypingTimeout(tempoProfile.meanCPS, tempoProfile.deviation, Date.now()),
+            typing: getTypingTimeout(tempoProfile.meanCPS, tempoProfile.deviation, Date.now()),
             edit: getEditLikelihood(editState, state.profile.editProfile.editRate, isTyping),
             fire: {
                 ...state.fire,

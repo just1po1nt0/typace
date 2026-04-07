@@ -1,6 +1,6 @@
 import { EditProfile, PauseProfile, Profile, ProfileSamples, SessionEditState, TempoProfile, ToleranceProfile } from "@/types";
 import ProfileController from "./profile";
-import { EMA, getAlpha, getIntervals, intervalsToFrequency, meanAvg, stdDev } from "@/engine/util";
+import { EMA, getAlpha, getIntervals, intervalsToFrequency, intervalsToFrequencyDeviation, meanAvg, stdDev } from "@/engine/util";
 
 const alpha_min = 0.04;
 const alpha_max = 0.135;
@@ -123,16 +123,13 @@ type Signal = "type" | "edit" | "pause" | "fire";
 export const updateLocalTempoProfile = (tempoProfile: TempoProfile, timestamps: number[]): TempoProfile => {
     const s = tempoProfile.samples
     const intervals = getIntervals(timestamps);
-    const mean = meanAvg(intervals);
-    const dev = stdDev(intervals, mean);
+    if(intervals.length < 1) return tempoProfile;
 
-    tempoProfile.meanCPS = EMA(tempoProfile.meanCPS, intervalsToFrequency(intervals), s)
-    tempoProfile.deviation = EMA(tempoProfile.deviation, dev, s);
+    tempoProfile.meanCPS = EMA(tempoProfile.meanCPS, intervalsToFrequency(intervals), s);
+    tempoProfile.deviation = EMA(tempoProfile.deviation, intervalsToFrequencyDeviation(intervals), s);
     tempoProfile.samples++
 
-    return tempoProfile; 
-    /** TO DO: Modularise this by passing tempoProfile instead of localProfile */
-
+    return tempoProfile;
 }
 
 export const updateLocalPauseProfile = (pauseProfile: PauseProfile, intervals: number[], applyDefaultGrowth: boolean = false, positiveGrowth: boolean = false): PauseProfile => {
@@ -144,11 +141,13 @@ export const updateLocalPauseProfile = (pauseProfile: PauseProfile, intervals: n
             1 - getAlpha(s);
         intervals = [...intervals, pauseProfile.meanPause * multiplier]
     }
+    if(intervals.length === 0) return pauseProfile;
     const mean = meanAvg(intervals);
     const dev = stdDev(intervals, mean);
 
     pauseProfile.meanPause = EMA(pauseProfile.meanPause, mean, s);
     pauseProfile.deviation = EMA(pauseProfile.deviation, dev, s)
+    pauseProfile.samples++
 
     return pauseProfile
 }

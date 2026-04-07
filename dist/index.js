@@ -49,7 +49,7 @@ var getAlpha = (n) => {
   return alpha_min + alpha_max * (1 - Math.exp(-n / rise_rate)) - alpha_max * (1 - Math.exp(-n / decay_rate));
 };
 var getIntervals = (values) => {
-  if (values.length < 2) return [0];
+  if (values.length < 2) return [];
   let result = [];
   for (let i = 1; i < values.length; i++) {
     result.push(values[i] - values[i - 1]);
@@ -59,6 +59,12 @@ var getIntervals = (values) => {
 var intervalsToFrequency = (intervals) => {
   if (intervals.length < 1) return 0;
   return 1e3 / meanAvg(intervals);
+};
+var intervalsToFrequencyDeviation = (intervals) => {
+  if (intervals.length < 1) return 0;
+  const frequencyValues = intervals.map((i) => 1e3 / i);
+  const mean = meanAvg(frequencyValues);
+  return stdDev(frequencyValues, mean);
 };
 var truncateOldTimestamps = (timestamps, threshold = 2e3, now = (/* @__PURE__ */ new Date()).getTime()) => {
   return timestamps.filter((t) => now - t <= threshold);
@@ -92,9 +98,7 @@ var getTypingTimeout = (avgCPS, devCPS, timestamp = (/* @__PURE__ */ new Date())
 };
 var getPauseTimeout = (pauseProfile, typingTimeout, editSignal, fireTolerance) => {
   const devConfidence = 2;
-  const avgPause = 1e3 / pauseProfile.meanPause;
-  const dev = 1e3 / pauseProfile.deviation;
-  const t = avgPause + devConfidence * dev;
+  const t = pauseProfile.meanPause + devConfidence * pauseProfile.deviation;
   const pauseTimeout = typingTimeout + getWeightedPauseThreshold(t, editSignal, fireTolerance);
   return { pauseTimeout, t };
 };
@@ -104,6 +108,7 @@ var getWeightedPauseThreshold = (timeoutInterval, editSignal, fireTolerance) => 
 var getEditLikelihood = (editState, editRate, isTyping) => {
   if (!editState.prevLength) editState.prevLength = 0;
   const delta = Math.abs(editState.length - editState.prevLength);
+  console.log(isTyping);
   if (delta === 0) {
     return { ...editState, effort: editState.effort++, consecutiveEdits: 0 };
   }
@@ -112,9 +117,9 @@ var getEditLikelihood = (editState, editRate, isTyping) => {
     const DECAY_RATE = Math.exp(-delta / expectedEditSize);
     return {
       ...editState,
-      prevLength: length,
+      prevLength: editState.length,
       progress: editState.progress + delta,
-      effort: editState.progress + delta,
+      effort: editState.effort + delta,
       consecutiveEdits: 0,
       signal: editState.signal * DECAY_RATE
     };
@@ -134,10 +139,9 @@ var getEditLikelihood = (editState, editRate, isTyping) => {
 var updateLocalTempoProfile = (tempoProfile, timestamps) => {
   const s = tempoProfile.samples;
   const intervals = getIntervals(timestamps);
-  const mean = meanAvg(intervals);
-  const dev = stdDev(intervals, mean);
+  if (intervals.length < 1) return tempoProfile;
   tempoProfile.meanCPS = EMA(tempoProfile.meanCPS, intervalsToFrequency(intervals), s);
-  tempoProfile.deviation = EMA(tempoProfile.deviation, dev, s);
+  tempoProfile.deviation = EMA(tempoProfile.deviation, intervalsToFrequencyDeviation(intervals), s);
   tempoProfile.samples++;
   return tempoProfile;
 };
@@ -147,10 +151,12 @@ var updateLocalPauseProfile = (pauseProfile, intervals, applyDefaultGrowth = fal
     const multiplier = positiveGrowth ? 1 + getAlpha(s) : 1 - getAlpha(s);
     intervals = [...intervals, pauseProfile.meanPause * multiplier];
   }
+  if (intervals.length === 0) return pauseProfile;
   const mean = meanAvg(intervals);
   const dev = stdDev(intervals, mean);
   pauseProfile.meanPause = EMA(pauseProfile.meanPause, mean, s);
   pauseProfile.deviation = EMA(pauseProfile.deviation, dev, s);
+  pauseProfile.samples++;
   return pauseProfile;
 };
 var updateToleranceProfile = (toleranceProfile, exceededSessionTimeout) => {
@@ -181,8 +187,8 @@ var DEFAULT_PROFILE = {
     samples: 0
   },
   pauseProfile: {
-    meanPause: 3.5,
-    deviation: 1.12,
+    meanPause: 500,
+    deviation: 150,
     samples: 0
   },
   editProfile: {
@@ -197,7 +203,7 @@ var DEFAULT_PROFILE = {
 };
 
 // src/engine/cookie.ts
-var COOKIE_NAME = "typace_profile_v1";
+var COOKIE_NAME = "typace_profile";
 var deserialiseProfile = (cookie) => ({
   version: cookie.v,
   tempoProfile: {
@@ -206,9 +212,9 @@ var deserialiseProfile = (cookie) => ({
     samples: cookie.st
   },
   pauseProfile: {
-    meanPause: cookie.pc * 10,
-    deviation: cookie.pd * 10,
-    longPauseThreshold: cookie.pc * 10 + 2 * cookie.pd * 10,
+    meanPause: cookie.pc * 1e3,
+    deviation: cookie.pd * 1e3,
+    //longPauseThreshold: (cookie.pc * 10) + (2 * cookie.pd * 10),
     samples: cookie.sp
   },
   editProfile: {
@@ -267,6 +273,7 @@ var ProfileController = class _ProfileController {
     this.notifyListeners();
   }
   getProfile() {
+    console.log("asked for profile and got this", this.profile);
     return this.profile;
   }
   subscribe(listener) {
@@ -349,7 +356,7 @@ var processTick = () => {
   if (sessionStore.getState().terminated) stopSession();
   const now = Date.now();
   sessionStore.setState((curr) => {
-    const cleanedTimestamps = cleanTimestamps([...curr.timestamps], now);
+    const cleanedTimestamps = cleanTimestamps([...curr.timestamps], performance.now());
     const state = {
       ...curr,
       timestamps: cleanedTimestamps
@@ -391,7 +398,11 @@ var processTick = () => {
         pause: updatedPause
       };
     }
-    if (!state.fire.hasFired) state.fire.fire();
+    if (!state.fire.hasFired) {
+      console.log("Data before fire:", state);
+      state.fire.fire();
+    }
+    ;
     const awaitTimeout = pauseTimeout + state.typing.interval;
     if (awaitTimeout > now) {
       return {
@@ -451,7 +462,7 @@ var addEvent = (length2, inputType, isComposing, timestamp = Date.now(), fire) =
         ...state.profile,
         tempoProfile
       },
-      timeout: getTypingTimeout(tempoProfile.meanCPS, tempoProfile.deviation, Date.now()),
+      typing: getTypingTimeout(tempoProfile.meanCPS, tempoProfile.deviation, Date.now()),
       edit: getEditLikelihood(editState, state.profile.editProfile.editRate, isTyping),
       fire: {
         ...state.fire,
@@ -468,11 +479,11 @@ var session_default = {
 // src/react/useAdaptiveDebounce.ts
 var useAdaptiveDebounce = (onFire, minFireLength) => {
   const bind = {
-    onBeforeInput(e) {
+    onInput(e) {
       const length2 = e.currentTarget.value.length;
       const inputType = e.nativeEvent.inputType;
-      const isComposing = e.nativeEvent.isComposing;
-      const timestamp = e.nativeEvent.timeStamp;
+      const isComposing = e.nativeEvent.isComposing ?? false;
+      const timestamp = e.timeStamp;
       const fire = () => onFire("e.currentTarget.value");
       session_default.addEvent(length2, inputType, isComposing, timestamp, fire);
     }

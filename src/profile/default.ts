@@ -11,8 +11,8 @@ export const DEFAULT_PROFILE: Profile = {
         samples: 0,
     },
     pauseProfile: {
-        meanPause: 3.5,
-        deviation: 1.12,
+        meanPause: 500,
+        deviation: 150,
         samples: 0,
     },
     editProfile: {

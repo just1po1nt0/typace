@@ -52,7 +52,7 @@ export const getAlpha = (n: number): number => {
  * @remarks Truncates data — useful for only ≥2 samples. 
  */
 export const getIntervals = (values: number[]): number[] => {
-    if(values.length < 2 ) return [0];
+    if(values.length < 2 ) return [];
     let result: number[] = [];
     for(let i = 1; i < values.length; i++) {
         result.push(values[i] - values[i-1]);
@@ -79,6 +79,13 @@ export const timestampsToFrequency = (timestamps: number[]): number => {
     const intervals = getIntervals(timestamps);
     return intervalsToFrequency(intervals);
 } 
+
+export const intervalsToFrequencyDeviation = (intervals: number[]): number => {
+    if(intervals.length < 1) return 0;
+    const frequencyValues = intervals.map(i => 1000 / i);
+    const mean = meanAvg(frequencyValues);
+    return stdDev(frequencyValues, mean);
+}
 
 /**
  * Function used in array of timestamps to remove those older than `timestamp - threshold`

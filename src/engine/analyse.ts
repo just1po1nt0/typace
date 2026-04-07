@@ -46,6 +46,7 @@ export const getTypingTimeout = (avgCPS: number, devCPS: number, timestamp: numb
     // convert to ms
     const avgInterval = 1000 / avgCPS;
     const devInterval = 1000 / devCPS;
+
     const t = avgInterval + (devConfidence * devInterval);
 
     return {timeout: timestamp + t, interval: t};
@@ -68,10 +69,7 @@ type GetPauseTimeout = (
 export const getPauseTimeout: GetPauseTimeout = (pauseProfile, typingTimeout, editSignal, fireTolerance) => {
     const devConfidence = 2;
 
-    // convert to ms
-    const avgPause = 1000 / pauseProfile.meanPause;
-    const dev = 1000 / pauseProfile.deviation;
-    const t = avgPause + (devConfidence * dev);
+    const t = pauseProfile.meanPause + (devConfidence * pauseProfile.deviation);
 
     const pauseTimeout = typingTimeout + getWeightedPauseThreshold(t, editSignal, fireTolerance);
     return {pauseTimeout, t}
@@ -98,6 +96,8 @@ export const getEditLikelihood = (editState: SessionEditState, editRate: number,
     if(!editState.prevLength) editState.prevLength = 0;
     const delta = Math.abs(editState.length - editState.prevLength)
 
+    console.log(isTyping);
+
     if(delta === 0) {
         return { ...editState, effort: editState.effort++, consecutiveEdits: 0}
     }
@@ -107,9 +107,9 @@ export const getEditLikelihood = (editState: SessionEditState, editRate: number,
         const DECAY_RATE = Math.exp(-delta / expectedEditSize);
         return {
             ...editState,
-            prevLength: length,
+            prevLength: editState.length,
             progress: editState.progress + delta,
-            effort: editState.progress + delta,
+            effort: editState.effort + delta,
             consecutiveEdits: 0,
             signal: editState.signal * DECAY_RATE
         }

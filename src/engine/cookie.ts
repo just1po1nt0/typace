@@ -16,7 +16,7 @@ export type ProfileCookie = {
     ts: number; // timestamp
 };
 
-export const COOKIE_NAME = "typace_profile_v1";
+export const COOKIE_NAME = "typace_profile";
 export const DEFAULT_EXPIRES_DAYS = 365;
 
 /** 
@@ -48,9 +48,9 @@ export const deserialiseProfile = (cookie: ProfileCookie): Profile => ({
         samples: cookie.st,
     },
     pauseProfile: {
-        meanPause: cookie.pc * 10,
-        deviation: cookie.pd * 10,
-        longPauseThreshold: (cookie.pc * 10) + (2 * cookie.pd * 10),
+        meanPause: cookie.pc * 1000,
+        deviation: cookie.pd * 1000,
+        //longPauseThreshold: (cookie.pc * 10) + (2 * cookie.pd * 10),
         samples: cookie.sp
     },
     editProfile: {
