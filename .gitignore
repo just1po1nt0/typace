@@ -1,7 +1,8 @@
 node_modules
 dist
 dist/*
-./*.tgz
-**.OLD
-/.idea
 *.tgz
+**.OLD
+.idea
+*.tgz
+.DS_Store
