@@ -27,6 +27,7 @@ export const getInfluenceWeight = (n: number, observed: number, dev: number, str
  * @param dev currently stored standard deviation from profile.
  * @param observed observed new value to move the average.
  * @param samples number of samples recorded into profile.
+ * @returns EMA value weighted with influence deviation
  */
 export const weightedEMA = (n: number, observed: number, dev: number, samples: number) => {
     const a = getAlpha(samples);

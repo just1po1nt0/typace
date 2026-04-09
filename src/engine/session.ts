@@ -2,7 +2,7 @@ import { getEditLikelihood, getPauseTimeout, getTypingTimeout, shouldCountAsTypi
 import { updateEditProfile, updateLocalPauseProfile, updateLocalTempoProfile, updateToleranceProfile } from "@/profile/update";
 import { truncateOldTimestamps } from "./util";
 import { sessionStore } from "./store";
-import { PauseProfile } from "@/types";
+import { PauseProfile, SessionState } from "@/types";
 import profileController from "@/profile/profile";
 
 const CYCLE_DURATION_MS = 20;
@@ -20,6 +20,7 @@ let intervalId: NodeJS.Timeout | null = null;
 //        ...updater(state)
 //    };
 //}
+
 
 const startSession = () => {
     if (!intervalId) {
