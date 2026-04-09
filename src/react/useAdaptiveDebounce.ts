@@ -1,4 +1,4 @@
-import { NativeEvent, SessionState, useAdaptiveDebounceProps } from "../types"
+import { NativeCompositionEvent, NativeInputEvent, SessionState, useAdaptiveDebounceProps } from "../types"
 import DEFAULT_CONFIG from "@/engine/config";
 import session from "@/engine/session";
 import { sessionStore } from "@/engine/store";
@@ -27,7 +27,7 @@ const useAdaptiveDebounce: useAdaptiveDebounceProps = (onFire, config) => {
         };
     }, [mergedConfig]);
 
-    const handleEvent = (e: NativeEvent, inputType: string, isComposing: boolean) => {
+    const handleEvent = (e: NativeInputEvent | NativeCompositionEvent, inputType: string, isComposing: boolean) => {
         const target = e.currentTarget;
         if (!target) return;
         
@@ -38,11 +38,11 @@ const useAdaptiveDebounce: useAdaptiveDebounceProps = (onFire, config) => {
     };
     
     const bind = {
-        onInput(e: NativeEvent) {
+        onInput(e: NativeInputEvent) {
             const nativeEvent = e.nativeEvent as InputEvent;
             handleEvent(e, nativeEvent.inputType, nativeEvent.isComposing ?? false);
         },
-        onCompositionEnd(e: NativeEvent) {
+        onCompositionEnd(e: NativeCompositionEvent) {
             handleEvent(e, 'insertCompositionText', false);
         }
     };

@@ -202,7 +202,7 @@ const addEvent = (length: number, inputType: string, isComposing: boolean, times
                 ...state.profile,
                 tempoProfile,
             },
-            typing: getTypingTimeout(tempoProfile.meanCPS, tempoProfile.deviation, Date.now()),
+            typing: getTypingTimeout(tempoProfile.meanCPS, tempoProfile.deviation, Date.now() + (isComposing ? 10000 : 0)),
             edit: getEditLikelihood(editState, state.profile.editProfile.editRate, isTyping),
             fire: {
                 ...state.fire,

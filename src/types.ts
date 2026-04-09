@@ -89,10 +89,17 @@ export type Profile = {
     lastUpdated: number;
 }
 
-export type NativeEvent = React.InputEvent<HTMLInputElement | HTMLTextAreaElement>;
+export type NativeInputEvent = React.SyntheticEvent<HTMLInputElement | HTMLTextAreaElement>;
+export type NativeCompositionEvent = React.CompositionEvent<HTMLInputElement | HTMLTextAreaElement>;
 
-type useAdaptiveDebounceReturn = {
-    bind: { onInput: (e: NativeEvent) => void, onCompositionEnd: (e: NativeEvent) => void } | any,
+export type useAdaptiveDebounceProps = ( 
+    onFire: (value: any) => any,
+    config?: Config,
+) => {
+    /**
+     * Spreadable object with `onInput` and `onCompositionEnd` event listeners to activate *typace*
+     */
+    bind: { onInput: (e: NativeInputEvent) => void, onCompositionEnd: (e: NativeCompositionEvent) => void },
     /**
      * An object with variables typace collected into session state.
      */
@@ -102,11 +109,6 @@ type useAdaptiveDebounceReturn = {
      */
     destroy: () => void,
 }
-
-export type useAdaptiveDebounceProps = ( 
-    onFire: (value: any) => any,
-    config?: Config,
-) => useAdaptiveDebounceReturn
 
 //export type Config = {
     //weight?: {
