@@ -1,6 +1,6 @@
 {
   "name": "react-typace",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "module": "./dist/index.mjs",
   "main": "./dist/cjs/index.cjs",
   "types": "./dist/index.d.mts",
