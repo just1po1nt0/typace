@@ -8,4 +8,3 @@ dist/*
 *.tgz
 .DS_Store
 coverage/
-package-lock.json
