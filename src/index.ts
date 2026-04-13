@@ -1,2 +1,2 @@
-export { default as useAdaptiveDebounce } from "./react/useAdaptiveDebounce";
+export { useAdaptiveDebounce } from "./react/useAdaptiveDebounce";
 export type { useAdaptiveDebounceProps, Config } from "./types";

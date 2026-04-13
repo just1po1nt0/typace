@@ -6,7 +6,7 @@ import React, { useEffect, useState } from "react";
 import profileController from "@/profile/profile"; // Ensure this is imported
 import { destroy } from "@/engine/storage";
 
-const useAdaptiveDebounce: useAdaptiveDebounceProps = (onFire, config) => {
+export const useAdaptiveDebounce: useAdaptiveDebounceProps = (onFire, config) => {
     const [debug, setDebug] = useState<SessionState>();
 
     const mergedConfig = {
@@ -50,4 +50,4 @@ const useAdaptiveDebounce: useAdaptiveDebounceProps = (onFire, config) => {
     return { bind, debug, destroy };
 };
 
-export default useAdaptiveDebounce;
+//export default useAdaptiveDebounce;
