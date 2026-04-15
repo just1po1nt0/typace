@@ -25,7 +25,10 @@
   "description": "React hook that learns how your users type to debounce searches intelligently",
   "author": "Gleb Safiannikov <tylerdelmas0@gmail.com>",
   "license": "MIT",
-  "repository": "just1po1nt0/typace",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JUST1PO1NT0/typace.git"
+  }
   "scripts": {
     "compile": "tsup",
     "build": "tsup && npm pack",
