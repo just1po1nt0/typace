@@ -43,7 +43,8 @@ class ProfileController {
         this.profile = {
             ...this.profile,
             ...compareAndFilter(this.profile, update),
-            lastUpdated: Date.now()
+            lastUpdated: Date.now(),
+            version: 2
         };
         this.notifyListeners();
         pushProfile(this.profile, config);
