@@ -2,7 +2,7 @@ import { NativeCompositionEvent, NativeInputEvent, SessionState, useAdaptiveDebo
 import DEFAULT_CONFIG from "@/engine/config";
 import session from "@/engine/session";
 import { sessionStore } from "@/engine/store";
-import React, { useEffect, useState } from "react";
+import React, { SyntheticEvent, useEffect, useState } from "react";
 import profileController from "@/profile/profile"; // Ensure this is imported
 import { destroy } from "@/engine/storage";
 
@@ -44,6 +44,10 @@ export const useAdaptiveDebounce: useAdaptiveDebounceProps = (onFire, config) =>
         },
         onCompositionEnd(e: NativeCompositionEvent) {
             handleEvent(e, 'insertCompositionText', false);
+        },
+        onKeyDown(e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) {
+            if(e.key !== "Enter") return;
+            handleEvent(e, "Enter", false)
         }
     };
 

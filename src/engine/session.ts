@@ -183,12 +183,13 @@ const addEvent = (length: number, inputType: string, isComposing: boolean, times
     if (!intervalId) startSession();
 
     if(
-        ((inputType === "insertParagraph" && config.fireOnEnter) 
+        ((inputType === "Enter" && config.fireOnEnter) 
          || 
          (inputType === "insertFromPaste" && config.fireOnPaste))
         &&
         (config.strictMinLength ? length >= config.minFireLength! : true)
     ) {
+        fire();
         sessionStore.setState((state) => ({...state, terminated: true}));
     }
 
@@ -218,7 +219,7 @@ const addEvent = (length: number, inputType: string, isComposing: boolean, times
                 ...state.profile,
                 tempoProfile,
             },
-            typing: getTypingTimeout(tempoProfile.meanCPS, tempoProfile.deviation, Date.now() + (isComposing ? 10000 : 0)),
+            typing: getTypingTimeout(tempoProfile.meanCPS, tempoProfile.deviation, Date.now() + (isComposing ? config.compositionBuffer! : 0)),
             edit: getEditLikelihood(editState, state.profile.editProfile.editRate, isTyping),
             fire: {
                 ...state.fire,

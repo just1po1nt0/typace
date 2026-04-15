@@ -8,6 +8,7 @@ const DEFAULT_CONFIG: Config = {
     strictMinLength: true,
     fireOnEnter: true,
     fireOnPaste: false,
+    compositionBuffer: 10000,
     minFireDelay: 100,
     maxWait: -1
 }
