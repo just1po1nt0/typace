@@ -1,6 +1,7 @@
 import { Config, Profile } from "@/types";
 import { DEFAULT_PROFILE } from "./default";
 import { fetchProfile, pushProfile } from "@/engine/storage";
+import { compareAndFilter } from "./update";
 
 class ProfileController {
     private static instance: ProfileController;
@@ -37,11 +38,11 @@ class ProfileController {
         this.notifyListeners();
     }
 
-    updateProfile(update: Partial<Profile>, config: Config): void {
+    updateProfile(update: Profile, config: Config): void {
         if(!this.profile) return;
         this.profile = {
             ...this.profile,
-            ...update,
+            ...compareAndFilter(this.profile, update),
             lastUpdated: Date.now()
         };
         this.notifyListeners();
