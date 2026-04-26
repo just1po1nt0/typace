@@ -27,7 +27,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/JUST1PO1NT0/typace.git"
+    "url": "git+https://github.com/just1po1nt0/typace.git"
   },
   "scripts": {
     "compile": "tsup",
@@ -63,7 +63,7 @@
     "privacy"
   ],
   "bugs": {
-    "url": "https://github.com/JUST1PO1NT0/typace/discussions/categories/please-report-bugs-here"
+    "url": "https://github.com/just1po1nt0/typace/discussions/categories/please-report-bugs-here"
   },
-  "homepage": "https://github.com/JUST1PO1NT0/typace"
+  "homepage": "https://github.com/just1po1nt0/typace"
 }
