@@ -1,4 +1,4 @@
-# react-typace (beta)
+# react-typace
 **Forget about your 300ms search debounce in favour of adaptive debounce based on real data!**
 
 This minimal, privacy-focused React library collects data as the user typing to leverage the power of statistics to determine when the search should fire. It resolves the problem of 300ms debounce where slow typers trigger search with every character they type, but fast typers are punished by the non-adaptive logic. This algorithm collects anonymised data about typing behaviour, such as typing speed, fire tolerance (how much this user prefers early fires), how often the user edits, and thinking (pause) times, all stored in a signle cookie. Implementation is minimal, with configs to come in the beta stage of development.
@@ -50,10 +50,11 @@ Features to do with writing and saving of data are restricted by default unless 
 const config: Config = {
   persistentStorage: true,
   useCookie: false,
-  cookieMaxAgeDays = 30,
+  cookieMaxAgeDays: 30,
   minFireLength: 8,
   fireOnEnter: true,
   fireOnPaste: true,
+  compositionBuffer: 5000,
   minFireDelay: 100,
   maxWait: 0
 }
