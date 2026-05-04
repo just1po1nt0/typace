@@ -191,6 +191,7 @@ const addEvent = (length: number, inputType: string, isComposing: boolean, times
     ) {
         fire();
         sessionStore.setState((state) => ({...state, terminated: true}));
+        return;
     }
 
     const isTyping = shouldCountAsTyping(inputType, isComposing);
