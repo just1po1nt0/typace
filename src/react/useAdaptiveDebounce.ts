@@ -2,19 +2,19 @@ import { NativeCompositionEvent, NativeInputEvent, SessionState, useAdaptiveDebo
 import DEFAULT_CONFIG from "@/engine/config";
 import session from "@/engine/session";
 import { sessionStore } from "@/engine/store";
-import React, { SyntheticEvent, useEffect, useState } from "react";
+import React, { SyntheticEvent, useEffect, useMemo, useState } from "react";
 import profileController from "@/profile/profile"; // Ensure this is imported
 import { destroy } from "@/engine/storage";
 
 export const useAdaptiveDebounce: useAdaptiveDebounceProps = (onFire, config) => {
     const [debug, setDebug] = useState<SessionState>();
 
-    const mergedConfig = {
+    const mergedConfig = useMemo(() => ({
         persistentStorage: DEFAULT_CONFIG.persistentStorage,
         useCookie: DEFAULT_CONFIG.useCookie,
         cookieMaxAgeDays: DEFAULT_CONFIG.cookieMaxAgeDays,
         ...config
-    };
+    }), [config]);
     
     useEffect(() => {
         profileController.initialise(mergedConfig);

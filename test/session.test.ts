@@ -148,5 +148,31 @@ describe('Session Orchestrator', () => {
 
             expect(sessionStore.getState().terminated).toBe(true);
         })
+
+        it("should apply compositionBuffer to typing timeout when isComposing is true", () => {
+            const MOCK_TIME = 10000;
+            const COMPOSITION_BUFFER = 5000;
+            jest.setSystemTime(MOCK_TIME); 
+        
+            const config = { ...cfg, compositionBuffer: COMPOSITION_BUFFER };
+            session.addEvent(5, "insertCompositionText", true, MOCK_TIME, fireMock, config);
+        
+            // buffer applies
+            expect(analyse.getTypingTimeout).toHaveBeenCalledWith(
+                expect.anything(), 
+                expect.anything(),
+                MOCK_TIME + COMPOSITION_BUFFER   
+            );
+        
+            jest.clearAllMocks();
+            session.addEvent(5, "insertText", false, MOCK_TIME, fireMock, config);
+
+            // buffer does not apply
+            expect(analyse.getTypingTimeout).toHaveBeenCalledWith(
+                expect.anything(), 
+                expect.anything(), 
+                MOCK_TIME
+            );
+        });
     })
 })
