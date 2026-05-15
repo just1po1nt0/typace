@@ -77,9 +77,6 @@ var typingEvents = debug.timestamps; // all typing events currently stored withi
 The structure of the debug data is located within TypeScript type declarations.
 Please refrain from saving debug data in a deployed app unless prior user consent is given.
 
-## Contributing
-Migrated to CONTRIBUTING.md.
-
 ## Legal entries
 **IMPORTANT:** Beacuse I live in a country where GDPR applies, I know that consent it definitely required have some knowledge to be able to put something into the legal section, yet **I am NOT a lawyer, and as such, the entries below are AI-generated**.
 
