@@ -2,11 +2,12 @@ import { defineConfig, Options } from 'tsup'
 
 const config: Options = {
   entry: { index: 'src/index.ts' },
-  dts: true,
+  dts: false,
   clean: false,
   minify: false,
   sourcemap: false,
   treeshake: true,
+  outDir: 'dist',
   target: 'es2020',
   external: ['react'],
   noExternal: ['zustand'],
@@ -17,14 +18,13 @@ export default defineConfig([
   {
     ...config,
     format: 'cjs',
-    outDir: 'dist/cjs',
+    dts: true,
     outExtension: () => ({ js: '.cjs' }),
   },
   // EcmaScript Module
   {
     ...config,
     format: 'esm',
-    outDir: 'dist',
     outExtension: () => ({ js: '.mjs' }),
   },
 ])
