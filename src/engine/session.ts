@@ -118,15 +118,23 @@ const processTick = () => {
         }
 
         // config-based checks
-        if(state.config.minFireLength! > state.edit.length || now - state.start < state.config.minFireDelay!) {
+        if(now - state.start < state.config.minFireDelay!) {
             return {
                 ...state,
                 pause: updatedPause
             }
         }
 
-        if (!state.fire.hasFired) {
+        if (!state.fire.hasFired && state.edit.length >= state.config.minFireLength!) {
             state.fire.fire();
+
+            return {
+                ...state,
+                fire: {
+                    ...state.fire,
+                    hasFired: true,
+                }
+            }
         }
         
         // will also recalculate every time (FIX)
@@ -136,10 +144,6 @@ const processTick = () => {
             return {
                 ...state,
                 pause: updatedPause,
-                fire: {
-                    ...state.fire,
-                    hasFired: true,
-                }
             };
         }
 
