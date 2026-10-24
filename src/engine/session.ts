@@ -99,7 +99,7 @@ const processTick = () => {
         const start = state.pause.start || now;
         
         // right now this will recalculate every time the conditions are met with the same outcome
-        const { pauseTimeout, t } = getPauseTimeout(state.profile.pauseProfile, state.typing.timeout, state.edit.signal, state.profile.toleranceProfile.fireTolerance);
+        const { pauseTimeout, t } = getPauseTimeout(state.profile.pauseProfile, state.typing.timeout, state.typing.interval, state.edit.signal, state.profile.toleranceProfile.fireTolerance);
         
         // DRY: Extracted repetitive pause state updates used in subsequent returns
         const updatedPause = {

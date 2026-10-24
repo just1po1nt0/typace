@@ -55,6 +55,7 @@ export const getTypingTimeout = (avgCPS: number, devCPS: number, timestamp: numb
 type GetPauseTimeout = (
     pauseProfile: PauseProfile,
     typingTimeout: number,
+    meanTypingInterval: number,
     editSignal: number,
     fireTolerance: number,
 ) => {pauseTimeout: number, t: number};
@@ -63,13 +64,17 @@ type GetPauseTimeout = (
  * Calculate time threshold where pause will fire without further user input
  * @param pauseProfile session pause profile (with mean and deviation)
  * @param typingTimeout typing timeout calculated with `getTypingTimeout()`
+ * @param typingInterval typing interval (`avgInterval + 2σ`) in effect for the current cadence
+ * @param editSignal current edit likelihood signal from `getEditLikelihood()`
  * @returns `timestamp + t` tiem threshold before which to expect input before firing
  * @remarks time-driven in `session`
  */
-export const getPauseTimeout: GetPauseTimeout = (pauseProfile, typingTimeout, editSignal, fireTolerance) => {
+export const getPauseTimeout: GetPauseTimeout = (pauseProfile, typingTimeout, meanTypingInterval, editSignal, fireTolerance) => {
     const devConfidence = 2;
+    const pauseFloorRatio = 1.5;
 
-    const t = pauseProfile.meanPause + (devConfidence * pauseProfile.deviation);
+    const learned = pauseProfile.meanPause + (devConfidence * pauseProfile.deviation);
+    const t = Math.max(learned, meanTypingInterval * pauseFloorRatio)
 
     const pauseTimeout = typingTimeout + getWeightedPauseThreshold(t, editSignal, fireTolerance);
     return {pauseTimeout, t}
