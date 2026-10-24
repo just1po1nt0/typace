@@ -132,8 +132,10 @@ export type Config = {
      */
     cookieMaxAgeDays?: number;
     /** 
-     * The minimum number of characters required in the input field before the 
+     *  The minimum number of characters required in the input field before the 
      *  search is allowed to fire. Prevents premature API calls for single-letter queries.
+     * 
+     *  *For example* if `minFireLength = 3`, then queries with length less than 3 characters will not fire, and queries with length greater or equal to 3 characters will.
      *  @default 1
      */
     minFireLength?: number;
@@ -171,6 +173,9 @@ export type Config = {
      *  The absolute minimum delay (in milliseconds) the engine must wait before firing, 
      *  regardless of how fast the user is typing. Useful for rate-limiting.
      *  @default 100
+     * 
+     *  @note
+     *  May distort profiles when set above 500ms. See [#27](https://github.com/just1po1nt0/typace/issues/27).
      */
     minFireDelay?: number;
 
