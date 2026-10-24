@@ -161,7 +161,7 @@ export const updateToleranceProfile = (toleranceProfile: ToleranceProfile, excee
 
     const fireTolerance = toleranceProfile.fireTolerance * multiplier;
     
-    toleranceProfile.fireTolerance = fireTolerance;
+    toleranceProfile.fireTolerance = Math.min(1, Math.max(0, fireTolerance))
     toleranceProfile.samples++;
 
     return toleranceProfile;
