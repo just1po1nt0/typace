@@ -53,8 +53,9 @@ describe('Analysis Functions', () => {
             const typingTimeout = 10000;
             const editSignal = 0.5;
             const fireTolerance = 0.3;
+            const meanTypingInterval = 200;
             
-            const result = getPauseTimeout(pauseProfile, typingTimeout, editSignal, fireTolerance);
+            const result = getPauseTimeout(pauseProfile, typingTimeout, meanTypingInterval, editSignal, fireTolerance);
             // t = 500 + 2*100 = 700
             // weighted = (700 - (1-0.5)) * (1.2 * exp(-0.4*0.3)) = ~699.5 * 1.07 = ~748
             // pauseTimeout = 10000 + 748 = 10748
