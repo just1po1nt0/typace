@@ -71,7 +71,7 @@ type GetPauseTimeout = (
  */
 export const getPauseTimeout: GetPauseTimeout = (pauseProfile, typingTimeout, meanTypingInterval, editSignal, fireTolerance) => {
     const devConfidence = 2;
-    const pauseFloorRatio = 1.5;
+    const pauseFloorRatio = 0.8;
 
     const learned = pauseProfile.meanPause + (devConfidence * pauseProfile.deviation);
     const t = Math.max(learned, meanTypingInterval * pauseFloorRatio)
